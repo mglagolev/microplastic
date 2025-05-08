@@ -65,6 +65,10 @@ def split_sequence_uniform(u, nsplit):
     remove_connectivity(u)
 
 
+def find_terminal_atoms(u):
+    """Determine the indices of the terminal atoms"""
+
+
 def remove_connectivity(u):
     atom_molecule_tags = u.trajectory.ts.data['molecule_tag']
     prev_tag = atom_molecule_tags[:-1]
@@ -90,6 +94,17 @@ def remove_connectivity(u):
                 u.delete_angles([angle])
 
 
+def choose_initial_sequence_file(initial_data):
+    id_type = type(initial_data)
+    if id_type == str:
+        initial_sequence_file = initial_data
+    elif id_type == list:
+        initial_sequence_file = random.choice(initial_data)
+    else:
+        raise NameError("Initial data is of type {id_type} in the config")
+    return initial_sequence_file
+
+
 def prepare_sample(simulation):
     """Fetch the required inital sequence and modify it"""
 
@@ -97,8 +112,10 @@ def prepare_sample(simulation):
     run_parameters = config['run_parameters']
     model_parameters = config['model_parameters']
     trial_parameters = simulation['trial_parameters']
-
-    initial_sequence_file = run_parameters['initial_data']
+    
+    initial_sequence_file = choose_initial_sequence_file(
+                                run_parameters['initial_data'])
+    simulation["initial_data"] = initial_sequence_file
 
     for model_parameter in model_parameters:
         initial_sequence_file = initial_sequence_file.replace(
